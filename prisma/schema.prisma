@@ -86,10 +86,14 @@ model Order {
   userId          String
   totalAmount     Int
   status          OrderStatus @default(PENDING)
+  paymentMethod   String      @default("credit")
   stripePaymentId String?
   shippingName    String
-  shippingAddress String
+  shippingEmail   String
+  shippingPhone   String
   shippingZip     String
+  shippingCity    String
+  shippingAddress String
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   user            User        @relation(fields: [userId], references: [id])
@@ -117,6 +121,7 @@ enum Role {
 
 enum OrderStatus {
   PENDING
+  PROCESSING
   PAID
   SHIPPED
   DELIVERED

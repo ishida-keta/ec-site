@@ -61,12 +61,16 @@ users ─────────────── orders ──── order_it
 |-------|-----|------|------|
 | id | String (cuid) | PK | 注文ID |
 | userId | String | FK → users | ユーザーID |
-| totalAmount | Int | | 合計金額（円） |
+| totalAmount | Int | | 合計金額（円、送料込み） |
 | status | OrderStatus | DEFAULT PENDING | 注文ステータス |
-| stripePaymentId | String? | | Stripe決済ID |
+| stripePaymentId | String? | | Stripe決済ID（クレジット決済時） |
+| paymentMethod | String | DEFAULT 'credit' | 支払い方法（credit/bank/cod） |
 | shippingName | String | | 配送先氏名 |
-| shippingAddress | String | | 配送先住所 |
+| shippingEmail | String | | 配送先メールアドレス |
+| shippingPhone | String | | 配送先電話番号 |
 | shippingZip | String | | 郵便番号 |
+| shippingCity | String | | 都道府県・市区町村 |
+| shippingAddress | String | | 番地・建物名 |
 | createdAt | DateTime | | 注文日時 |
 | updatedAt | DateTime | | 更新日時 |
 
@@ -92,6 +96,7 @@ users ─────────────── orders ──── order_it
 | 値 | 説明 |
 |----|------|
 | PENDING | 注文受付（決済前） |
+| PROCESSING | 処理中（入金確認等） |
 | PAID | 決済完了 |
 | SHIPPED | 発送済み |
 | DELIVERED | 配達完了 |
@@ -102,3 +107,6 @@ users ─────────────── orders ──── order_it
 - `order_items.unitPrice` は注文時点の価格を保存（商品価格変更後も正確な履歴を保持するため）
 - `products.published = false` は管理者のみ閲覧可能、一般公開しない
 - パスワードは bcrypt でハッシュ化して保存（生パスワードは保存しない）
+- `paymentMethod` は 'credit'（クレジットカード）/ 'bank'（銀行振込）/ 'cod'（代金引換）の3種類
+- 銀行振込・代金引換の場合は `stripePaymentId` は NULL
+- 住所は `shippingCity`（都道府県・市区町村）と `shippingAddress`（番地・建物名）に分割して保存
