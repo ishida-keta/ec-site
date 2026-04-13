@@ -1,14 +1,16 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { ShoppingCart, Menu, X } from 'lucide-react';
-import { useState } from 'react';
-import { useCart } from '@/lib/cartStore';
+import Link from 'next/link'
+import { ShoppingCart, Menu, X, User } from 'lucide-react'
+import { useState } from 'react'
+import { useCart } from '@/lib/cartStore'
+import { useSession, signOut } from 'next-auth/react'
 
 export function Header() {
-  const { itemCount } = useCart();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const count = itemCount();
+  const { itemCount } = useCart()
+  const { data: session } = useSession()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const count = itemCount()
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -20,10 +22,27 @@ export function Header() {
 
           <nav className="hidden md:flex items-center gap-8 text-sm">
             <Link href="/" className="hover:opacity-60 transition-opacity">商品一覧</Link>
-            <Link href="/mypage" className="hover:opacity-60 transition-opacity">マイページ</Link>
+            {session ? (
+              <>
+                <Link href="/mypage" className="hover:opacity-60 transition-opacity">マイページ</Link>
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="hover:opacity-60 transition-opacity text-gray-600"
+                >
+                  ログアウト
+                </button>
+              </>
+            ) : (
+              <Link href="/login" className="hover:opacity-60 transition-opacity">ログイン</Link>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
+            {session && (
+              <Link href="/mypage">
+                <User className="w-5 h-5 text-gray-600" />
+              </Link>
+            )}
             <Link href="/cart" className="relative">
               <ShoppingCart className="w-5 h-5" />
               {count > 0 && (
@@ -41,11 +60,22 @@ export function Header() {
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 py-4 space-y-3 text-sm">
             <Link href="/" className="block py-2" onClick={() => setMenuOpen(false)}>商品一覧</Link>
-            <Link href="/mypage" className="block py-2" onClick={() => setMenuOpen(false)}>マイページ</Link>
-            <Link href="/login" className="block py-2" onClick={() => setMenuOpen(false)}>ログイン</Link>
+            {session ? (
+              <>
+                <Link href="/mypage" className="block py-2" onClick={() => setMenuOpen(false)}>マイページ</Link>
+                <button
+                  onClick={() => { setMenuOpen(false); signOut({ callbackUrl: '/' }) }}
+                  className="block py-2 text-left w-full text-gray-600"
+                >
+                  ログアウト
+                </button>
+              </>
+            ) : (
+              <Link href="/login" className="block py-2" onClick={() => setMenuOpen(false)}>ログイン</Link>
+            )}
           </div>
         )}
       </div>
     </header>
-  );
+  )
 }

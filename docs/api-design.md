@@ -17,8 +17,8 @@ Next.js App Router の Route Handlers（`src/app/api/`）で実装。
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
-| POST | /api/auth/signup | 新規会員登録 | 不要 |
-| POST | /api/auth/[...nextauth] | NextAuth.js ハンドラ | - |
+| POST | /api/auth/signup | 新規会員登録 ✅ 実装済み | 不要 |
+| POST | /api/auth/[...nextauth] | NextAuth.js ハンドラ ✅ 実装済み | - |
 
 ### 商品
 

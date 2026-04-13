@@ -1,12 +1,25 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Package, User, LogOut } from 'lucide-react';
-import { mockOrders, statusLabel, statusColor } from '@/data/mockData';
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Package, User, LogOut } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
+import { mockOrders, statusLabel, statusColor } from '@/data/mockData'
 
 export default function MyPage() {
-  const [tab, setTab] = useState<'orders' | 'profile'>('orders');
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [tab, setTab] = useState<'orders' | 'profile'>('orders')
+
+  if (status === 'loading') {
+    return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
+  }
+
+  if (!session) {
+    router.push('/login?callbackUrl=/mypage')
+    return null
+  }
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
@@ -18,14 +31,17 @@ export default function MyPage() {
               { key: 'orders', label: '注文履歴', icon: Package },
               { key: 'profile', label: 'プロフィール', icon: User },
             ].map(({ key, label, icon: Icon }) => (
-              <button key={key} onClick={() => setTab(key as 'orders' | 'profile')}
+              <button key={key} onClick={() => setTab(key as any)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${tab === key ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
                 <Icon className="w-5 h-5" />{label}
               </button>
             ))}
-            <Link href="/login" className="w-full flex items-center gap-3 px-4 py-3 text-left bg-gray-100 hover:bg-gray-200 transition-colors">
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="w-full flex items-center gap-3 px-4 py-3 text-left bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
               <LogOut className="w-5 h-5" />ログアウト
-            </Link>
+            </button>
           </nav>
         </aside>
 
@@ -66,17 +82,16 @@ export default function MyPage() {
               <h2 className="text-2xl mb-8">プロフィール</h2>
               <div className="border border-gray-200 p-6">
                 <div className="space-y-6">
-                  {[
-                    { label: 'お名前', type: 'text', value: '山田太郎' },
-                    { label: 'メールアドレス', type: 'email', value: 'yamada@example.com' },
-                    { label: '電話番号', type: 'tel', value: '03-1234-5678' },
-                  ].map(f => (
-                    <div key={f.label}>
-                      <label className="block text-sm mb-2">{f.label}</label>
-                      <input type={f.type} defaultValue={f.value}
-                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black" />
-                    </div>
-                  ))}
+                  <div>
+                    <label className="block text-sm mb-2">お名前</label>
+                    <input type="text" defaultValue={session.user?.name ?? ''}
+                      className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black" />
+                  </div>
+                  <div>
+                    <label className="block text-sm mb-2">メールアドレス</label>
+                    <input type="email" defaultValue={session.user?.email ?? ''} readOnly
+                      className="w-full px-4 py-2 border border-gray-200 bg-gray-50 text-gray-500" />
+                  </div>
                   <button className="bg-black text-white px-8 py-3 hover:bg-gray-800 transition-colors">保存する</button>
                 </div>
               </div>
@@ -85,5 +100,5 @@ export default function MyPage() {
         </main>
       </div>
     </div>
-  );
+  )
 }
