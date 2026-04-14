@@ -1,16 +1,28 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Package, User, LogOut } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
-import { mockOrders, statusLabel, statusColor } from '@/data/mockData'
+import { statusLabel, statusColor } from '@/data/mockData'
+import type { OrderDetail } from '@/types'
 
 export default function MyPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [tab, setTab] = useState<'orders' | 'profile'>('orders')
+  const [orders, setOrders] = useState<OrderDetail[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    setOrdersLoading(true)
+    fetch('/api/orders')
+      .then((res) => res.json())
+      .then((data) => setOrders(Array.isArray(data) ? data : []))
+      .catch(() => setOrders([]))
+      .finally(() => setOrdersLoading(false))
+  }, [status])
 
   if (status === 'loading') {
     return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
@@ -31,7 +43,7 @@ export default function MyPage() {
               { key: 'orders', label: '注文履歴', icon: Package },
               { key: 'profile', label: 'プロフィール', icon: User },
             ].map(({ key, label, icon: Icon }) => (
-              <button key={key} onClick={() => setTab(key as any)}
+              <button key={key} onClick={() => setTab(key as 'orders' | 'profile')}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${tab === key ? 'bg-black text-white' : 'bg-gray-100 hover:bg-gray-200'}`}>
                 <Icon className="w-5 h-5" />{label}
               </button>
@@ -49,31 +61,39 @@ export default function MyPage() {
           {tab === 'orders' && (
             <div>
               <h2 className="text-2xl mb-8">注文履歴</h2>
-              <div className="space-y-6">
-                {mockOrders.map(order => (
-                  <div key={order.id} className="border border-gray-200 p-6">
-                    <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-                      <div>
-                        <p className="text-sm text-gray-600 mb-1">注文日: {new Date(order.createdAt).toLocaleDateString('ja-JP')}</p>
-                        <p className="text-sm text-gray-600">注文番号: #{order.id}</p>
-                      </div>
-                      <span className={`px-3 py-1 text-xs ${statusColor[order.status]}`}>{statusLabel[order.status]}</span>
-                    </div>
-                    <div className="space-y-2 mb-6">
-                      {order.items.map(item => (
-                        <div key={item.productId} className="flex justify-between text-sm">
-                          <span>{item.productName} × {item.quantity}</span>
-                          <span>¥{(item.price * item.quantity).toLocaleString()}</span>
+              {ordersLoading ? (
+                <p className="text-gray-500">読み込み中...</p>
+              ) : orders.length === 0 ? (
+                <p className="text-gray-500">注文履歴はありません</p>
+              ) : (
+                <div className="space-y-6">
+                  {orders.map(order => (
+                    <div key={order.id} className="border border-gray-200 p-6">
+                      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+                        <div>
+                          <p className="text-sm text-gray-600 mb-1">注文日: {new Date(order.createdAt).toLocaleDateString('ja-JP')}</p>
+                          <p className="text-sm text-gray-600">注文番号: #{order.id.slice(0, 8)}...</p>
                         </div>
-                      ))}
+                        <span className={`px-3 py-1 text-xs ${statusColor[order.status.toLowerCase()] ?? 'bg-gray-100 text-gray-800'}`}>
+                          {statusLabel[order.status.toLowerCase()] ?? order.status}
+                        </span>
+                      </div>
+                      <div className="space-y-2 mb-6">
+                        {order.items.map(item => (
+                          <div key={item.id} className="flex justify-between text-sm">
+                            <span>{item.product.name} × {item.quantity}</span>
+                            <span>¥{(item.unitPrice * item.quantity).toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
+                        <p className="text-sm text-gray-600">配送先: {order.shippingZip} {order.shippingCity}{order.shippingAddress}</p>
+                        <p className="text-lg">合計: ¥{order.totalAmount.toLocaleString()}</p>
+                      </div>
                     </div>
-                    <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
-                      <p className="text-sm text-gray-600">配送先: {order.shippingAddress.zipCode} {order.shippingAddress.city}{order.shippingAddress.address}</p>
-                      <p className="text-lg">合計: ¥{order.totalAmount.toLocaleString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

@@ -1,7 +1,31 @@
-import type { Order } from '@/types';
-
 // 注意: 商品データは Supabase DB に移行済み。mockProducts は削除して良い。
-// Order型はまだDBと未連携なため、モックのまま残す。
+// mockOrders は admin/orders ページが DB 連携されるまでの暫定データ。
+
+interface MockOrderItem {
+  productId: number;
+  productName: string;
+  quantity: number;
+  price: number;
+}
+
+interface MockShippingAddress {
+  name: string;
+  zipCode: string;
+  city: string;
+  address: string;
+  phone: string;
+  email: string;
+}
+
+interface Order {
+  id: number;
+  userId: number;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+  items: MockOrderItem[];
+  shippingAddress: MockShippingAddress;
+}
 
 export const mockOrders: Order[] = [
   {

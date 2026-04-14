@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { mockOrders, statusLabel, statusColor } from '@/data/mockData';
 import { Search, ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
-import type { OrderStatus } from '@/types';
+type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState(mockOrders);
