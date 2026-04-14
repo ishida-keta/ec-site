@@ -10,6 +10,8 @@
 - `orders.stripeCheckoutSessionId`（UNIQUE）を追加。Webhook で **在庫減算と注文作成を同一トランザクション**にし、**同一 Stripe Checkout Session の二重注文**を防止。
 - `POST /api/checkout/session` で **公開商品の在庫を DB 照会**し、不足・非公開は 400。
 - DB 反映は `npx prisma db push`（または migrate）が必要。
+- 調査で、`DATABASE_URL` が Supabase pooler（6543）の場合に `db push` が進まないケースを確認。`DATABASE_URL="$DIRECT_URL" npx prisma db push --accept-data-loss` で反映できることを確認。
+- Stripe Dashboard の webhook は署名不一致（HTTP 400）を確認。ローカル検証時は `stripe listen --forward-to localhost:3000/api/webhooks/stripe` の `whsec_...` を `.env.local` に設定して運用。
 
 ### ドキュメント・README
 - `README.md` を日本語化。`CLAUDE.md` への参照を追記。
@@ -41,4 +43,4 @@
 
 ---
 
-最終更新: 2026-04-14
+最終更新: 2026-04-14（Webhook署名エラー調査・db push手順追記）

@@ -29,7 +29,9 @@ docs/              # 設計ドキュメント
 - `npm run dev` — 開発サーバー起動
 - `npx prisma studio` — DB GUI
 - `npx prisma db push` — スキーマをDBに反映
+- `DATABASE_URL="$DIRECT_URL" npx prisma db push --accept-data-loss` — Supabase direct接続で反映（poolerで詰まる場合）
 - `npx prisma generate` — Prismaクライアント生成
+- `stripe listen --forward-to localhost:3000/api/webhooks/stripe` — ローカルWebhook検証（表示された `whsec_...` を `STRIPE_WEBHOOK_SECRET` に設定）
 
 ## 環境変数（.env.local）
 ```
@@ -38,6 +40,7 @@ DIRECT_URL=
 NEXTAUTH_SECRET=
 NEXTAUTH_URL=http://localhost:3000
 STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=whsec_f4ee1b723afbbf54b93862948776270ce4232b913dc9c416037b77ce84fad94e
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 ```
 
