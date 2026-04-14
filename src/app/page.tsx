@@ -1,11 +1,12 @@
 import { ProductGrid } from '@/components/product/ProductGrid';
 
 interface HomePageProps {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; page?: string }>;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  const { category } = await searchParams;
+  const { category, page } = await searchParams;
+  const pageNumber = page ? parseInt(page, 10) : 1;
 
   return (
     <div>
@@ -27,7 +28,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           </a>
         </div>
       </section>
-      <ProductGrid categorySlug={category} />
+      <ProductGrid categorySlug={category} page={pageNumber} />
     </div>
   );
 }

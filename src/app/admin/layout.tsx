@@ -17,6 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <nav className="hidden md:flex gap-6 text-sm">
                 <Link href="/admin/products" className={isActive('/admin/products') ? 'text-white' : 'text-gray-400 hover:text-white'}>商品管理</Link>
                 <Link href="/admin/orders" className={isActive('/admin/orders') ? 'text-white' : 'text-gray-400 hover:text-white'}>注文管理</Link>
+                <Link href="/admin/users" className={isActive('/admin/users') ? 'text-white' : 'text-gray-400 hover:text-white'}>ユーザー管理</Link>
               </nav>
             </div>
             <Link href="/" className="text-sm text-gray-400 hover:text-white">ストアに戻る</Link>
