@@ -4,15 +4,19 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/lib/cartStore';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const router = useRouter();
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '',
     zipCode: '', city: '', address: '',
     paymentMethod: 'credit',
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const subtotal = total();
   const shipping = subtotal >= 5000 ? 0 : 500;
@@ -22,10 +26,53 @@ export default function CheckoutPage() {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearCart();
-    router.push('/order-complete');
+    setError(null);
+
+    if (formData.paymentMethod === 'credit') {
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/checkout/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items: items.map((item) => ({
+              productId: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              imageUrl: item.image,
+            })),
+            shipping: {
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              zipCode: formData.zipCode,
+              city: formData.city,
+              address: formData.address,
+            },
+            totalAmount: subtotal + shipping,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error ?? '決済セッションの作成に失敗しました');
+        }
+
+        const { url } = await res.json();
+        clearCart();
+        window.location.href = url;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
+        setIsLoading(false);
+      }
+    } else {
+      // 銀行振込・代金引換はモック
+      clearCart();
+      router.push('/order-complete');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -84,7 +131,11 @@ export default function CheckoutPage() {
                   <span>{m.label}</span>
                 </label>
               ))}
-              <p className="text-xs text-gray-500 mt-3">※ この画面はデモです。実際の決済は行われません。</p>
+              {formData.paymentMethod === 'credit' ? (
+                <p className="text-xs text-gray-500 mt-3">※ Stripeの安全な決済ページに移動します。</p>
+              ) : (
+                <p className="text-xs text-gray-500 mt-3">※ この画面はデモです。実際の決済は行われません。</p>
+              )}
             </section>
           </div>
 
@@ -116,8 +167,15 @@ export default function CheckoutPage() {
                 <span className="text-lg">合計</span>
                 <span className="text-2xl">¥{(subtotal + shipping).toLocaleString()}</span>
               </div>
-              <button type="submit" className="w-full bg-black text-white py-3 hover:bg-gray-800 transition-colors">
-                注文を確定する
+              {error && (
+                <p className="text-red-600 text-sm mb-3">{error}</p>
+              )}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-black text-white py-3 hover:bg-gray-800 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+              >
+                {isLoading ? '処理中...' : formData.paymentMethod === 'credit' ? 'カード決済へ進む' : '注文を確定する'}
               </button>
             </div>
           </div>

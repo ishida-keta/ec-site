@@ -1,6 +1,6 @@
 # API設計書
 
-最終更新: 2026-04-14
+最終更新: 2026-04-14（Stripe決済統合）
 
 ## 概要
 
@@ -38,8 +38,9 @@ Next.js App Router の Route Handlers（`src/app/api/`）で実装。
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
-| POST | /api/checkout/session | Stripe Checkout Session作成 | 必要 |
-| POST | /api/webhooks/stripe | Stripe Webhook受信 | Stripe署名検証 |
+| POST | /api/checkout/session | Stripe Checkout Session作成 ✅ 実装済み | 必要 |
+| GET  | /api/checkout/verify | Stripe Session情報取得 ✅ 実装済み | 不要 |
+| POST | /api/webhooks/stripe | Stripe Webhook受信・注文DB保存 ✅ 実装済み | Stripe署名検証 |
 
 ### 管理者 API
 
