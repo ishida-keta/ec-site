@@ -1,13 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { mockProducts } from '@/data/mockData';
 import { Plus, Edit, Trash2, Search } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { Product } from '@/types';
 
+// TODO: admin画面のDB連携は次フェーズで実装予定
+const initialProducts: Product[] = [];
+
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState(mockProducts);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -21,7 +23,7 @@ export default function AdminProductsPage() {
     setShowModal(true);
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm('この商品を削除してもよろしいですか?')) {
       setProducts(products.filter(p => p.id !== id));
     }
@@ -39,7 +41,16 @@ export default function AdminProductsPage() {
         <h1 className="text-3xl tracking-tight">商品管理</h1>
         <button
           onClick={() => {
-            setEditingProduct({ id: Date.now(), name: '', description: '', price: 0, stock: 0, category: '', image: '' });
+            setEditingProduct({
+              id: crypto.randomUUID(),
+              name: '',
+              description: null,
+              price: 0,
+              stock: 0,
+              categoryId: null,
+              imageUrl: null,
+              published: false,
+            });
             setShowModal(true);
           }}
           className="bg-black text-white px-6 py-2 hover:bg-gray-800 transition-colors flex items-center gap-2"
@@ -85,7 +96,9 @@ export default function AdminProductsPage() {
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-gray-100 flex-shrink-0">
-                      <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                      {product.imageUrl && (
+                        <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                      )}
                     </div>
                     <div>
                       <p className="font-medium">{product.name}</p>
@@ -93,7 +106,7 @@ export default function AdminProductsPage() {
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-sm">{product.category}</td>
+                <td className="px-6 py-4 text-sm">{product.category?.name ?? product.categoryId}</td>
                 <td className="px-6 py-4 text-sm">¥{product.price.toLocaleString()}</td>
                 <td className="px-6 py-4">
                   <span className={`text-sm ${product.stock < 10 ? 'text-red-600' : product.stock < 30 ? 'text-yellow-600' : 'text-green-600'}`}>
@@ -130,8 +143,8 @@ export default function AdminProductsPage() {
               </div>
               <div>
                 <label className="block text-sm mb-2">説明</label>
-                <textarea defaultValue={editingProduct.description} rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black" required />
+                <textarea defaultValue={editingProduct.description ?? ''} rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -146,14 +159,9 @@ export default function AdminProductsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm mb-2">カテゴリ</label>
-                <input type="text" defaultValue={editingProduct.category}
-                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black" required />
-              </div>
-              <div>
                 <label className="block text-sm mb-2">画像URL</label>
-                <input type="url" defaultValue={editingProduct.image}
-                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black" required />
+                <input type="url" defaultValue={editingProduct.imageUrl ?? ''}
+                  className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black" />
               </div>
               <div className="flex gap-4 pt-4">
                 <button type="submit" className="flex-1 bg-black text-white py-2 hover:bg-gray-800 transition-colors">保存</button>

@@ -1,6 +1,12 @@
 import { ProductGrid } from '@/components/product/ProductGrid';
 
-export default function HomePage() {
+interface HomePageProps {
+  searchParams: Promise<{ category?: string }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const { category } = await searchParams;
+
   return (
     <div>
       <section className="relative h-[70vh] flex items-center justify-center overflow-hidden bg-gray-900">
@@ -21,7 +27,7 @@ export default function HomePage() {
           </a>
         </div>
       </section>
-      <ProductGrid />
+      <ProductGrid categorySlug={category} />
     </div>
   );
 }

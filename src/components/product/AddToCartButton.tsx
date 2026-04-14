@@ -9,7 +9,7 @@ export function AddToCartButton({ product }: { product: Product }) {
   const [added, setAdded] = useState(false);
 
   const handleAdd = () => {
-    addItem({ id: product.id, name: product.name, price: product.price, image: product.image });
+    addItem({ id: product.id, name: product.name, price: product.price, image: product.imageUrl ?? '' });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
