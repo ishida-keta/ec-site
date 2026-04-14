@@ -1,6 +1,6 @@
 # DB設計書
 
-最終更新: 2026-04-14
+最終更新: 2026-04-14（Stripe Checkout Session 冪等・在庫引当）
 
 ## 概要
 
@@ -63,7 +63,8 @@ users ─────────────── orders ──── order_it
 | userId | String | FK → users | ユーザーID |
 | totalAmount | Int | | 合計金額（円、送料込み） |
 | status | OrderStatus | DEFAULT PENDING | 注文ステータス |
-| stripePaymentId | String? | | Stripe決済ID（クレジット決済時） |
+| stripePaymentId | String? | | Stripe PaymentIntent 等の決済ID（クレジット決済時） |
+| stripeCheckoutSessionId | String? | UNIQUE | Stripe Checkout Session ID（Webhook 冪等・重複注文防止） |
 | paymentMethod | String | DEFAULT 'credit' | 支払い方法（credit/bank/cod） |
 | shippingName | String | | 配送先氏名 |
 | shippingEmail | String | | 配送先メールアドレス |
@@ -104,6 +105,7 @@ users ─────────────── orders ──── order_it
 
 ## 設計上の注意点
 
+- **在庫**: 決済完了 Webhook 内で `prisma.$transaction` により `products.stock` を減算してから `orders` を作成する。`stripeCheckoutSessionId` の UNIQUE で同一セッションの二重登録を防止する。
 - `order_items.unitPrice` は注文時点の価格を保存（商品価格変更後も正確な履歴を保持するため）
 - `products.published = false` は管理者のみ閲覧可能、一般公開しない
 - パスワードは bcrypt でハッシュ化して保存（生パスワードは保存しない）

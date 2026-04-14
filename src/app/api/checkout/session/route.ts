@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
 
 interface CartItem {
@@ -42,6 +43,23 @@ export async function POST(req: NextRequest) {
 
   if (!items || items.length === 0) {
     return NextResponse.json({ error: 'Cart is empty' }, { status: 400 })
+  }
+
+  const productIds = [...new Set(items.map(i => i.productId))]
+  const dbProducts = await prisma.product.findMany({
+    where: { id: { in: productIds }, published: true },
+    select: { id: true, stock: true },
+  })
+  const stockById = new Map(dbProducts.map(p => [p.id, p.stock]))
+
+  for (const item of items) {
+    const stock = stockById.get(item.productId)
+    if (stock === undefined || stock < item.quantity) {
+      return NextResponse.json(
+        { error: '在庫が不足しているか、取り扱いのない商品が含まれています' },
+        { status: 400 }
+      )
+    }
   }
 
   const lineItems = items.map((item) => ({

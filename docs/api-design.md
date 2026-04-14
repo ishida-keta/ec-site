@@ -1,6 +1,6 @@
 # API設計書
 
-最終更新: 2026-04-14（管理者の一般向けAPI利用制限）
+最終更新: 2026-04-14（Webhook 冪等・在庫トランザクション）
 
 ## 概要
 
@@ -45,9 +45,15 @@ Next.js App Router の Route Handlers（`src/app/api/`）で実装。
 
 | メソッド | パス | 説明 | 認証 |
 |---------|------|------|------|
-| POST | /api/checkout/session | Stripe Checkout Session作成 ✅ 実装済み | 必要（ADMIN は 403） |
+| POST | /api/checkout/session | Stripe Checkout Session作成（**DB で在庫確認**、不足時 400）✅ | 必要（ADMIN は 403） |
 | GET  | /api/checkout/verify | Stripe Session情報取得 ✅ 実装済み | 不要 |
-| POST | /api/webhooks/stripe | Stripe Webhook受信・注文DB保存 ✅ 実装済み | Stripe署名検証 |
+| POST | /api/webhooks/stripe | `checkout.session.completed`：**同一トランザクションで在庫減算＋注文作成**、`stripeCheckoutSessionId` で冪等 ✅ | Stripe署名検証 |
+
+**Webhook 挙動（`POST /api/webhooks/stripe`）**
+
+- `checkout.session.completed` 時、`prisma.$transaction` 内で (1) 既に `stripeCheckoutSessionId` があればスキップ (2) 各明細について `stock >= quantity` を満たすよう `product` を減算 (3) `orders` / `order_items` を作成。
+- 同一 `session.id` の再送・競合時は UNIQUE 制約（`P2002`）を握りつぶして 200 を返す（冪等）。
+- 減算できない場合は 500（決済済みだが在庫不足 — 運用で返金等が必要になり得る）。
 
 ### 管理者 API
 

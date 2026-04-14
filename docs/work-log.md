@@ -6,6 +6,11 @@
 
 ## 2026-04-14
 
+### 決済・在庫（Webhook / Checkout）
+- `orders.stripeCheckoutSessionId`（UNIQUE）を追加。Webhook で **在庫減算と注文作成を同一トランザクション**にし、**同一 Stripe Checkout Session の二重注文**を防止。
+- `POST /api/checkout/session` で **公開商品の在庫を DB 照会**し、不足・非公開は 400。
+- DB 反映は `npx prisma db push`（または migrate）が必要。
+
 ### ドキュメント・README
 - `README.md` を日本語化。`CLAUDE.md` への参照を追記。
 
