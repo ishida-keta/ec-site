@@ -11,11 +11,22 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url)
-    const search = searchParams.get('search')
+    const search = searchParams.get('search')?.trim()
 
     const orders = await prisma.order.findMany({
       where: search
-        ? { shippingName: { contains: search, mode: 'insensitive' } }
+        ? {
+            OR: [
+              { shippingName: { contains: search, mode: 'insensitive' } },
+              { shippingEmail: { contains: search, mode: 'insensitive' } },
+              { id: { contains: search } },
+              {
+                user: {
+                  email: { contains: search, mode: 'insensitive' },
+                },
+              },
+            ],
+          }
         : undefined,
       include: {
         items: {

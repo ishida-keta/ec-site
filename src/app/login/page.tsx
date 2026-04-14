@@ -3,7 +3,7 @@
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { signIn } from 'next-auth/react'
+import { getSession, signIn } from 'next-auth/react'
 
 function LoginForm() {
   const router = useRouter()
@@ -31,7 +31,11 @@ function LoginForm() {
       return
     }
 
-    router.push(callbackUrl)
+    const session = await getSession()
+    const role = (session?.user as { role?: string } | undefined)?.role
+    const destination = role === 'ADMIN' ? '/admin' : callbackUrl
+
+    router.push(destination)
     router.refresh()
   }
 

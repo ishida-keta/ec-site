@@ -8,6 +8,12 @@ export async function PUT(request: Request) {
   if (!session || !session.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  if ((session.user as { role?: string }).role === 'ADMIN') {
+    return NextResponse.json(
+      { error: '管理者アカウントでは利用できません' },
+      { status: 403 }
+    )
+  }
 
   const body = await request.json()
   const { name } = body

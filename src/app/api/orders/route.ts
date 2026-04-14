@@ -8,6 +8,12 @@ export async function GET() {
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  if ((session.user as { role?: string }).role === 'ADMIN') {
+    return NextResponse.json(
+      { error: '管理者は GET /api/admin/orders を利用してください' },
+      { status: 403 }
+    )
+  }
 
   const orders = await prisma.order.findMany({
     where: { userId: session.user.id },

@@ -1,24 +1,57 @@
 import { auth } from '@/lib/auth'
 import { NextResponse } from 'next/server'
 
-export default auth((req) => {
-  const { pathname } = req.nextUrl
+/** 一般向けストア（管理者は利用不可 → /admin へ） */
+function isStorefrontPath(pathname: string): boolean {
+  if (pathname === '/') return true
+  if (pathname.startsWith('/products/')) return true
+  if (
+    ['/mypage', '/cart', '/checkout', '/order-complete', '/auth/signup'].includes(
+      pathname
+    )
+  ) {
+    return true
+  }
+  return false
+}
 
-  // /admin/* へのアクセス
+export default auth(req => {
+  const { pathname } = req.nextUrl
+  const role = (req.auth?.user as { role?: string } | undefined)?.role
+
   if (pathname.startsWith('/admin')) {
-    // 未ログイン → /login にリダイレクト
     if (!req.auth) {
-      return NextResponse.redirect(new URL('/login?callbackUrl=/admin', req.url))
+      return NextResponse.redirect(
+        new URL('/login?callbackUrl=/admin', req.url)
+      )
     }
-    // ログイン済みだが ADMIN ロールでない → / にリダイレクト
-    if ((req.auth.user as any)?.role !== 'ADMIN') {
+    if (role !== 'ADMIN') {
       return NextResponse.redirect(new URL('/', req.url))
     }
+    return NextResponse.next()
+  }
+
+  if (pathname === '/login' && req.auth && role === 'ADMIN') {
+    return NextResponse.redirect(new URL('/admin', req.url))
+  }
+
+  if (req.auth && role === 'ADMIN' && isStorefrontPath(pathname)) {
+    return NextResponse.redirect(new URL('/admin', req.url))
   }
 
   return NextResponse.next()
 })
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: [
+    '/admin/:path*',
+    '/login',
+    '/',
+    '/mypage',
+    '/cart',
+    '/checkout',
+    '/order-complete',
+    '/auth/signup',
+    '/products/:path*',
+  ],
 }

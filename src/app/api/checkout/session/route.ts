@@ -30,6 +30,12 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  if ((session.user as { role?: string }).role === 'ADMIN') {
+    return NextResponse.json(
+      { error: '管理者アカウントでは購入手続きは利用できません' },
+      { status: 403 }
+    )
+  }
 
   const body: CheckoutSessionRequest = await req.json()
   const { items, shipping, totalAmount } = body

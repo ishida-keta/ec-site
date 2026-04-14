@@ -26,7 +26,7 @@ const statusColor: Record<string, string> = {
 type OrderItem = {
   id: string;
   quantity: number;
-  price: number;
+  unitPrice: number;
   product: { name: string };
 };
 
@@ -107,7 +107,7 @@ export default function AdminOrdersPage() {
           <div className="relative flex-1">
             <input
               type="text"
-              placeholder="お名前で検索..."
+              placeholder="注文ID・お名前・メールで検索..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -219,7 +219,7 @@ export default function AdminOrdersPage() {
                             {item.product.name} × {item.quantity}
                           </span>
                           <span>
-                            ¥{(item.price * item.quantity).toLocaleString()}
+                            ¥{(item.unitPrice * item.quantity).toLocaleString()}
                           </span>
                         </div>
                       ))}
