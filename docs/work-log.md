@@ -6,6 +6,9 @@
 
 ## 2026-04-15
 
+### バックログ登録（Prisma／DB 同期）
+- `docs/design-backlog.md` に **B-OPS-01**（スキーマと DB の同期を手運用に頼らない・デプロイ/CI 方針）を **高優先・未着手** で追加。
+
 ### P2022（`orders.shippingPrefecture` など）再発時の対応
 - 原因はいつも同じ: **コード側スキーマ更新に対し、Supabase 側へ `prisma db push` が未実行**。
 - 環境変数をシェルに載せたうえで `DATABASE_URL="$DIRECT_URL" npx prisma db push` を実行し同期済み。
@@ -108,4 +111,4 @@
 
 ---
 
-最終更新: 2026-04-15（P2022 対応メモ・CLAUDE 追記）
+最終更新: 2026-04-15（B-OPS-01 バックログ追加）

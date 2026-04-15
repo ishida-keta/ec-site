@@ -2,7 +2,7 @@
 
 設計見直しで洗い出した課題。**対応しやすいものから順に消化**する。完了したら本表を更新し、関連する `docs/*.md` や `docs/feature-list.md` も同じコミットで同期すること。
 
-最終更新: 2026-04-15（返品・注文ステータス対応を反映）
+最終更新: 2026-04-15（Prisma／DB 同期の運用課題を追加）
 
 ---
 
@@ -21,6 +21,7 @@
 | B-DOC-02 | **`api-design.md` の `POST /api/orders` 例** | サンプルが残っており、実フロー（Stripe Checkout 中心）と誤解されうる。 | 現行フローに合わせて例を差し替え、または「非推奨・参考」の注記を付ける。 | 高 | 未着手 |
 | B-DOC-03 | **`screen-flow.md` P-08 新規登録の実装フラグ** | P-08 が「未実装」のまま。`feature-list` では実装済み。 | `/auth/signup` の実装状況に合わせて表を修正する。 | 高 | **完了**（2026-04-15） |
 | B-DB-01 | **商品一覧クエリ用インデックス** | `published`・`categoryId`・`createdAt` 等のフィルタに対し、設計書・スキーマにインデックス方針の記載がない。件数増加で効く。 | 想定クエリを `db-design.md` に書き、必要な `@@index` を Prisma に追加して `db-design.md` と同期。 | 中 | 未着手 |
+| B-OPS-01 | **Prisma スキーマと DB の同期を手運用に頼らない** | `prisma/schema.prisma` は Git で更新されるが、**Supabase 等の DB は自動では変わらない**。`git pull` 後に `db push` / migrate を忘れると **P2022（カラム不存在）** が再発する。個人開発でも抜けやすい。 | **対応必須の方向性（いずれかを決めて実施）:** (1) **本番/Preview** は `prisma migrate deploy` をデプロイパイプラインに組み込む（Vercel Build Command や GitHub Actions）。(2) ローカル用に **post-merge / post-checkout フック**や README のチェックリストで「schema 差分があれば `db push`」を強制。(3) CI で `prisma migrate diff` 等による**ドリフト検知**（任意）。現状の手順は [`CLAUDE.md` の P2022 節](../CLAUDE.md) を参照。 | **高** | 未着手 |
 | B-FEAT-01 | **キーワード検索** | `feature-list` Should・未着手。ワイヤーには検索 UI あり。 | 段階1: `ILIKE` または PostgreSQL 全文検索。段階2: 専用検索エンジンは別途判断。`api-design.md`・画面仕様を追加。 | 中 | 未着手 |
 | B-FEAT-02 | **管理画面：カテゴリ CRUD** | `feature-list` Should・未着手。カテゴリ増加・slug 運用に必須。 | `/admin/categories` 等 + API。`category` 一意制約と URL 方針を `db-design.md` に追記。 | 中 | 未着手 |
 | B-FEAT-03 | **管理画面：ユーザー詳細** | Should・未着手。 | ユーザー単位の注文履歴参照など。`screen-flow.md`・`api-design.md` を更新。 | 低 | 未着手 |
@@ -32,10 +33,11 @@
 
 ## すぐ着手しやすい順（目安）
 
-1. **B-DOC-01 〜 B-DOC-03** — 実装変更なしまたは最小で迷いを減らせる  
-2. **B-DB-01** — 方針記述 → 必要ならインデックス追加  
-3. **B-FEAT-02** — 運用でカテゴリを増やす前提なら優先度を上げる  
-4. **B-FEAT-01** — UX とセットで検索パラメータ（`?q=`）を決める  
+1. **B-OPS-01** — スキーマ変更のたびに障害が出るため、**デプロイ or CI での同期方針を早めに固定**すると以降が楽になる  
+2. **B-DOC-01 〜 B-DOC-03** — 実装変更なしまたは最小で迷いを減らせる  
+3. **B-DB-01** — 方針記述 → 必要ならインデックス追加  
+4. **B-FEAT-02** — 運用でカテゴリを増やす前提なら優先度を上げる  
+5. **B-FEAT-01** — UX とセットで検索パラメータ（`?q=`）を決める  
 
 ---
 
