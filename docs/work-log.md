@@ -6,6 +6,10 @@
 
 ## 2026-04-15
 
+### 管理画面・注文一覧
+- `GET /api/admin/orders` に `dateFrom` / `dateTo`（`YYYY-MM-DD`、日本時間の 0:00〜23:59:59.999）を追加。テキスト検索と AND 合成。
+- `/admin/orders` に開始日・終了日の `input[type=date]` を追加。一覧行のパディング・フォントを詰め、件数増加を想定したコンパクト表示。
+
 ### Stripe 決済後に EC に戻れない（タブが読み込み続ける）
 - 原因: `success_url` が `NEXTAUTH_URL`（多くは `http://localhost:3000`）固定で、dev が `3001` など別ポートのとき、Stripe のリダイレクト先にサーバーがなく無限ローディングになる。
 - 対応: `src/lib/siteUrl.ts` の `resolveSiteUrl(req)` を追加し、`POST /api/checkout/session` の `success_url` / `cancel_url` に使用。開発時はリクエストの **`Origin` を優先**。
@@ -93,4 +97,4 @@
 
 ---
 
-最終更新: 2026-04-15（Stripe 戻り先 URL・verify・シード画像）
+最終更新: 2026-04-15（管理注文の日付絞り込み・一覧コンパクト化）

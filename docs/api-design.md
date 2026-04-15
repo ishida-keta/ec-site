@@ -1,6 +1,6 @@
 # API設計書
 
-最終更新: 2026-04-15（Checkout の success/cancel URL をリクエスト Origin で解決）
+最終更新: 2026-04-15（管理者注文一覧の日付クエリ）
 
 ## 概要
 
@@ -66,7 +66,7 @@ Next.js App Router の Route Handlers（`src/app/api/`）で実装。
 | POST | /api/admin/products | 商品登録 ✅ 実装済み | ADMIN |
 | PUT | /api/admin/products/[id] | 商品更新 ✅ 実装済み | ADMIN |
 | DELETE | /api/admin/products/[id] | 商品削除 ✅ 実装済み | ADMIN |
-| GET | /api/admin/orders | 全注文一覧（`search`: 名前・メール・注文ID 等） ✅ 実装済み | ADMIN |
+| GET | /api/admin/orders | 全注文一覧（`search`: 名前・メール・注文ID 等。`dateFrom` / `dateTo`: `YYYY-MM-DD` 日本時間の日の範囲） ✅ 実装済み | ADMIN |
 | PUT | /api/admin/orders/[id] | 注文更新 ✅（`status` に加え `packageCondition` / `accountingStatus` / `returnStatus` を個別指定可。いずれか1つ以上必須） | ADMIN |
 | GET | /api/admin/users | ユーザー一覧 ✅ 実装済み | ADMIN |
 
