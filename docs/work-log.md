@@ -21,6 +21,11 @@
 - Stripe セッション取得失敗は **502**。`/order-complete` で API 失敗時に案内文を表示。
 - `CheckoutPage` の `router.push('/cart')` を render 中実行から `useEffect` へ移し、購入直後の runtime warning を解消。
 
+### ログアウト時のカート
+- カートは `localStorage` (`ec-cart`) に保持されていたため、ログアウト後も件数が残る状態だった。
+- ログアウト直前に `prepareLogoutClearCart()` でフラグを立て、次画面の初回マウントで `ec-cart` を読み込まず削除。加えてセッションが認証済み→未認証に変わったときも空にする（SPA 内でのセッション切れ対策）。
+- `signOut` 呼び出しは `Header`（管理者）と `mypage` でフラグ付与。
+
 ### チェックアウト 401（未ログイン）
 - `POST /api/checkout/session` は会員セッション必須のため、未ログインだと **401**。購入手続き画面で未認証の場合は `/login?callbackUrl=/checkout` へ誘導し、API が 401 を返した場合も同様にリダイレクトする。
 

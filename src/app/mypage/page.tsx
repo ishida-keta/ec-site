@@ -11,6 +11,7 @@ import {
   accountingStatusLabel,
   returnStatusLabel,
 } from '@/lib/orderLabels'
+import { prepareLogoutClearCart } from '@/lib/cartStore'
 import type { OrderDetail } from '@/types'
 
 export default function MyPage() {
@@ -123,7 +124,10 @@ export default function MyPage() {
               </button>
             ))}
             <button
-              onClick={() => signOut({ callbackUrl: '/' })}
+              onClick={() => {
+                prepareLogoutClearCart()
+                signOut({ callbackUrl: '/' })
+              }}
               className="w-full flex items-center gap-3 px-4 py-3 text-left bg-gray-100 hover:bg-gray-200 transition-colors"
             >
               <LogOut className="w-5 h-5" />ログアウト

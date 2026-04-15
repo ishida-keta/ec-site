@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { ShoppingCart, Menu, X, User } from 'lucide-react'
 import { useState } from 'react'
-import { useCart } from '@/lib/cartStore'
+import { useCart, prepareLogoutClearCart } from '@/lib/cartStore'
 import { useSession, signOut } from 'next-auth/react'
 
 export function Header() {
@@ -63,7 +63,10 @@ export function Header() {
             <div className="hidden md:block">
               {session && isAdmin ? (
                 <button
-                  onClick={() => signOut({ callbackUrl: logoutCallbackUrl })}
+                  onClick={() => {
+                    prepareLogoutClearCart()
+                    signOut({ callbackUrl: logoutCallbackUrl })
+                  }}
                   className="hover:opacity-60 transition-opacity text-gray-600"
                 >
                   ログアウト
@@ -86,7 +89,11 @@ export function Header() {
                 <>
                   <Link href="/admin" className="block py-2 font-medium" onClick={() => setMenuOpen(false)}>管理ダッシュボード</Link>
                   <button
-                    onClick={() => { setMenuOpen(false); signOut({ callbackUrl: logoutCallbackUrl }) }}
+                    onClick={() => {
+                      setMenuOpen(false)
+                      prepareLogoutClearCart()
+                      signOut({ callbackUrl: logoutCallbackUrl })
+                    }}
                     className="block py-2 text-left w-full text-gray-600"
                   >
                     ログアウト
