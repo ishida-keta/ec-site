@@ -1,6 +1,6 @@
 # API設計書
 
-最終更新: 2026-04-14（Webhook 冪等・在庫トランザクション）
+最終更新: 2026-04-15（管理注文 PUT に開封・会計・返品フィールド）
 
 ## 概要
 
@@ -64,8 +64,20 @@ Next.js App Router の Route Handlers（`src/app/api/`）で実装。
 | PUT | /api/admin/products/[id] | 商品更新 ✅ 実装済み | ADMIN |
 | DELETE | /api/admin/products/[id] | 商品削除 ✅ 実装済み | ADMIN |
 | GET | /api/admin/orders | 全注文一覧（`search`: 名前・メール・注文ID 等） ✅ 実装済み | ADMIN |
-| PUT | /api/admin/orders/[id] | 注文ステータス更新 ✅ 実装済み | ADMIN |
+| PUT | /api/admin/orders/[id] | 注文更新 ✅（`status` に加え `packageCondition` / `accountingStatus` / `returnStatus` を個別指定可。いずれか1つ以上必須） | ADMIN |
 | GET | /api/admin/users | ユーザー一覧 ✅ 実装済み | ADMIN |
+
+### PUT /api/admin/orders/[id]（例）
+
+```json
+// Request — 開封状況のみ更新
+{ "packageCondition": "UNOPENED" }
+
+// Request — 返品フロー更新
+{ "returnStatus": "REFUNDED" }
+```
+
+値は各 Prisma enum（`OrderStatus`, `OrderPackageCondition`, `OrderAccountingStatus`, `OrderReturnStatus`）に一致する必要がある。
 
 ## リクエスト/レスポンス例
 

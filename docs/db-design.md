@@ -1,6 +1,6 @@
 # DB設計書
 
-最終更新: 2026-04-14（Stripe Checkout Session 冪等・在庫引当）
+最終更新: 2026-04-15（返品・開封・会計ステータス）
 
 ## 概要
 
@@ -62,7 +62,10 @@ users ─────────────── orders ──── order_it
 | id | String (cuid) | PK | 注文ID |
 | userId | String | FK → users | ユーザーID |
 | totalAmount | Int | | 合計金額（円、送料込み） |
-| status | OrderStatus | DEFAULT PENDING | 注文ステータス |
+| status | OrderStatus | DEFAULT PENDING | 注文ステータス（発送・決済フロー） |
+| packageCondition | OrderPackageCondition | DEFAULT UNCONFIRMED | 開封前／開封済など（返品・クーリングオフ判断の参考） |
+| accountingStatus | OrderAccountingStatus | DEFAULT PENDING | 会計・売上計上の内部管理 |
+| returnStatus | OrderReturnStatus | DEFAULT NONE | 返品・返金フロー（返金額は法令に従い別途処理） |
 | stripePaymentId | String? | | Stripe PaymentIntent 等の決済ID（クレジット決済時） |
 | stripeCheckoutSessionId | String? | UNIQUE | Stripe Checkout Session ID（Webhook 冪等・重複注文防止） |
 | paymentMethod | String | DEFAULT 'credit' | 支払い方法（credit/bank/cod） |
@@ -103,8 +106,31 @@ users ─────────────── orders ──── order_it
 | DELIVERED | 配達完了 |
 | CANCELLED | キャンセル |
 
+### OrderPackageCondition
+| 値 | 説明 |
+|----|------|
+| UNCONFIRMED | 未確認 |
+| UNOPENED | 開封前 |
+| OPENED | 開封済 |
+
+### OrderAccountingStatus
+| 値 | 説明 |
+|----|------|
+| PENDING | 未会計（売上未計上など） |
+| SETTLED | 会計済 |
+
+### OrderReturnStatus
+| 値 | 説明 |
+|----|------|
+| NONE | 返品なし |
+| REQUESTED | 返品申請中 |
+| APPROVED | 返品承認 |
+| REJECTED | 返品不可 |
+| REFUNDED | 返金完了（実際の返金額・手続きは法令・決済事業者に従う） |
+
 ## 設計上の注意点
 
+- **返品・返金額**: アプリは金額を自動計算しない。`OrderReturnStatus` は進捗管理用。返金額・可否は特定商取引法等に従い、画面 `/legal/returns` でユーザーに案内する。
 - **在庫**: 決済完了 Webhook 内で `prisma.$transaction` により `products.stock` を減算してから `orders` を作成する。`stripeCheckoutSessionId` の UNIQUE で同一セッションの二重登録を防止する。
 - `order_items.unitPrice` は注文時点の価格を保存（商品価格変更後も正確な履歴を保持するため）
 - `products.published = false` は管理者のみ閲覧可能、一般公開しない

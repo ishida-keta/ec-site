@@ -2,7 +2,7 @@
 
 設計見直しで洗い出した課題。**対応しやすいものから順に消化**する。完了したら本表を更新し、関連する `docs/*.md` や `docs/feature-list.md` も同じコミットで同期すること。
 
-最終更新: 2026-04-15
+最終更新: 2026-04-15（返品・注文ステータス対応を反映）
 
 ---
 
@@ -19,7 +19,7 @@
 |----|------|------------|----------|------|------------|
 | B-DOC-01 | **公開商品 API と実装の整合** | `api-design.md` に `GET /api/products`・`GET /api/products/[id]` があるが、ストア一覧は RSC + Prisma（`ProductGrid`）のみ。 | **A)** 設計書を「一覧は Server Component 直参照」と実装に合わせる **B)** または公開 Route Handler を追加しフロントを API 経由に統一する。方針を決めてドキュメントを一本化する。 | 高 | 未着手 |
 | B-DOC-02 | **`api-design.md` の `POST /api/orders` 例** | サンプルが残っており、実フロー（Stripe Checkout 中心）と誤解されうる。 | 現行フローに合わせて例を差し替え、または「非推奨・参考」の注記を付ける。 | 高 | 未着手 |
-| B-DOC-03 | **`screen-flow.md` P-08 新規登録の実装フラグ** | P-08 が「未実装」のまま。`feature-list` では実装済み。 | `/auth/signup` の実装状況に合わせて表を修正する。 | 高 | 未着手 |
+| B-DOC-03 | **`screen-flow.md` P-08 新規登録の実装フラグ** | P-08 が「未実装」のまま。`feature-list` では実装済み。 | `/auth/signup` の実装状況に合わせて表を修正する。 | 高 | **完了**（2026-04-15） |
 | B-DB-01 | **商品一覧クエリ用インデックス** | `published`・`categoryId`・`createdAt` 等のフィルタに対し、設計書・スキーマにインデックス方針の記載がない。件数増加で効く。 | 想定クエリを `db-design.md` に書き、必要な `@@index` を Prisma に追加して `db-design.md` と同期。 | 中 | 未着手 |
 | B-FEAT-01 | **キーワード検索** | `feature-list` Should・未着手。ワイヤーには検索 UI あり。 | 段階1: `ILIKE` または PostgreSQL 全文検索。段階2: 専用検索エンジンは別途判断。`api-design.md`・画面仕様を追加。 | 中 | 未着手 |
 | B-FEAT-02 | **管理画面：カテゴリ CRUD** | `feature-list` Should・未着手。カテゴリ増加・slug 運用に必須。 | `/admin/categories` 等 + API。`category` 一意制約と URL 方針を `db-design.md` に追記。 | 中 | 未着手 |

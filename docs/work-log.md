@@ -6,6 +6,12 @@
 
 ## 2026-04-15
 
+### 返品・注文ステータス
+- `orders` に `packageCondition`（開封）・`accountingStatus`（会計）・`returnStatus`（返品〜返金）を追加。返金額はアプリでは算定せず、法令順守を `/legal/returns` に記載。
+- 管理画面 `/admin/orders` で各ステータスを更新可能。`PUT /api/admin/orders/[id]` が上記フィールドに対応。
+- フッター・チェックアウト・マイページから返品案内へ誘導。
+- DB 反映: `npx prisma db push`（または migrate）。
+
 ### 設計見直し・バックログ
 - 設計レビューで出た課題を [`design-backlog.md`](./design-backlog.md) に一覧化（ドキュメント整合・インデックス・検索・カテゴリ管理・将来拡張など）。対応は着手しやすい順で消化する方針。
 - `CLAUDE.md` のドキュメント同期表に `docs/design-backlog.md` を追加。
@@ -51,4 +57,4 @@
 
 ---
 
-最終更新: 2026-04-15（設計バックログ design-backlog.md 追加）
+最終更新: 2026-04-15（返品案内・注文の開封/会計/返品ステータス）

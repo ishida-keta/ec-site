@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useCart } from '@/lib/cartStore';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
-
 export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const router = useRouter();
-  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '',
     zipCode: '', city: '', address: '',
@@ -137,6 +135,13 @@ export default function CheckoutPage() {
               ) : (
                 <p className="text-xs text-gray-500 mt-3">※ この画面はデモです。実際の決済は行われません。</p>
               )}
+              <p className="text-xs text-gray-600 mt-4 leading-relaxed">
+                返品・契約解除・返金は
+                <Link href="/legal/returns" className="underline hover:text-gray-900 ml-0.5">
+                  こちらの案内
+                </Link>
+                に従い、法令の定める期間・金額の範囲で対応します。
+              </p>
             </section>
           </div>
 

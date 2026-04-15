@@ -4,7 +4,13 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Package, User, LogOut } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
-import { statusLabel, statusColor } from '@/data/mockData'
+import {
+  fulfillmentStatusColor,
+  fulfillmentStatusLabel,
+  packageConditionLabel,
+  accountingStatusLabel,
+  returnStatusLabel,
+} from '@/lib/orderLabels'
 import type { OrderDetail } from '@/types'
 
 export default function MyPage() {
@@ -101,8 +107,10 @@ export default function MyPage() {
                           <p className="text-sm text-gray-600 mb-1">注文日: {new Date(order.createdAt).toLocaleDateString('ja-JP')}</p>
                           <p className="text-sm text-gray-600">注文番号: #{order.id.slice(0, 8)}...</p>
                         </div>
-                        <span className={`px-3 py-1 text-xs ${statusColor[order.status.toLowerCase()] ?? 'bg-gray-100 text-gray-800'}`}>
-                          {statusLabel[order.status.toLowerCase()] ?? order.status}
+                        <span
+                          className={`px-3 py-1 text-xs ${fulfillmentStatusColor[order.status] ?? 'bg-gray-100 text-gray-800'}`}
+                        >
+                          {fulfillmentStatusLabel[order.status] ?? order.status}
                         </span>
                       </div>
                       <div className="space-y-2 mb-6">
@@ -113,9 +121,37 @@ export default function MyPage() {
                           </div>
                         ))}
                       </div>
-                      <div className="border-t border-gray-200 pt-4 flex justify-between items-center">
-                        <p className="text-sm text-gray-600">配送先: {order.shippingZip} {order.shippingCity}{order.shippingAddress}</p>
-                        <p className="text-lg">合計: ¥{order.totalAmount.toLocaleString()}</p>
+                      <div className="border-t border-gray-200 pt-4 space-y-2">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                          <span>
+                            開封:{' '}
+                            {packageConditionLabel[order.packageCondition ?? 'UNCONFIRMED'] ??
+                              order.packageCondition}
+                          </span>
+                          <span>
+                            会計:{' '}
+                            {accountingStatusLabel[order.accountingStatus ?? 'PENDING'] ??
+                              order.accountingStatus}
+                          </span>
+                          <span>
+                            返品:{' '}
+                            {returnStatusLabel[order.returnStatus ?? 'NONE'] ?? order.returnStatus}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <p className="text-sm text-gray-600">
+                            配送先: {order.shippingZip} {order.shippingCity}
+                            {order.shippingAddress}
+                          </p>
+                          <p className="text-lg">合計: ¥{order.totalAmount.toLocaleString()}</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          返品・返金は
+                          <a href="/legal/returns" className="underline ml-0.5">
+                            返品・契約解除について
+                          </a>
+                          をご確認ください。
+                        </p>
                       </div>
                     </div>
                   ))}

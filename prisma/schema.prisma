@@ -84,6 +84,12 @@ model Order {
   userId                   String
   totalAmount              Int
   status                   OrderStatus @default(PENDING)
+  /// 商品の開封状況（返品・クーリングオフ判断の参考）
+  packageCondition       OrderPackageCondition @default(UNCONFIRMED)
+  /// 会計・売上計上の状態（内部管理）
+  accountingStatus       OrderAccountingStatus @default(PENDING)
+  /// 返品・返金フロー
+  returnStatus           OrderReturnStatus     @default(NONE)
   paymentMethod            String      @default("credit")
   stripePaymentId          String?
   /// Stripe Checkout Session ID（Webhook の冪等性・重複注文防止）
@@ -126,4 +132,26 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+/// 顧客・管理者が確認した荷姿・開封の状態
+enum OrderPackageCondition {
+  UNCONFIRMED
+  UNOPENED
+  OPENED
+}
+
+/// 会計上の処理状態（本番運用では会計ソフト連携の目安）
+enum OrderAccountingStatus {
+  PENDING
+  SETTLED
+}
+
+/// 返品対応の進捗（返金額は法令の定めるところにより決定）
+enum OrderReturnStatus {
+  NONE
+  REQUESTED
+  APPROVED
+  REJECTED
+  REFUNDED
 }

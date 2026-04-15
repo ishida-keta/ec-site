@@ -33,6 +33,9 @@ export interface OrderDetail {
   id: string
   totalAmount: number
   status: string
+  packageCondition?: string
+  accountingStatus?: string
+  returnStatus?: string
   createdAt: string
   shippingName: string
   shippingZip: string

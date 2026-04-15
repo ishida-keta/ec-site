@@ -3,25 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Search, ChevronDown } from 'lucide-react';
 import { motion } from 'motion/react';
-
-// Prisma OrderStatus（大文字）に対応したラベル・カラー
-const statusLabel: Record<string, string> = {
-  PENDING: '注文確認中',
-  PROCESSING: '処理中',
-  PAID: '支払い済み',
-  SHIPPED: '発送済み',
-  DELIVERED: '配送完了',
-  CANCELLED: 'キャンセル',
-};
-
-const statusColor: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  PROCESSING: 'bg-blue-100 text-blue-800',
-  PAID: 'bg-indigo-100 text-indigo-800',
-  SHIPPED: 'bg-purple-100 text-purple-800',
-  DELIVERED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-gray-100 text-gray-800',
-};
+import {
+  fulfillmentStatusColor,
+  fulfillmentStatusLabel,
+  packageConditionLabel,
+  accountingStatusLabel,
+  returnStatusLabel,
+} from '@/lib/orderLabels';
 
 type OrderItem = {
   id: string;
@@ -33,9 +21,13 @@ type OrderItem = {
 type Order = {
   id: string;
   status: string;
+  packageCondition?: string;
+  accountingStatus?: string;
+  returnStatus?: string;
   totalAmount: number;
   shippingName: string;
   shippingZip: string;
+  shippingCity?: string;
   shippingAddress: string;
   shippingPhone: string;
   createdAt: string;
@@ -78,13 +70,13 @@ export default function AdminOrdersPage() {
     fetchOrders(searchTerm || undefined);
   };
 
-  const handleStatusChange = async (orderId: string, newStatus: string) => {
+  const patchOrder = async (orderId: string, payload: Record<string, string>) => {
     setUpdatingId(orderId);
     try {
       const res = await fetch(`/api/admin/orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error('ステータスの更新に失敗しました');
       const updated: Order = await res.json();
@@ -169,11 +161,16 @@ export default function AdminOrdersPage() {
                     </p>
                     <span
                       className={`px-3 py-1 text-xs ${
-                        statusColor[order.status] ?? 'bg-gray-100 text-gray-800'
+                        fulfillmentStatusColor[order.status] ?? 'bg-gray-100 text-gray-800'
                       }`}
                     >
-                      {statusLabel[order.status] ?? order.status}
+                      {fulfillmentStatusLabel[order.status] ?? order.status}
                     </span>
+                    {order.returnStatus && order.returnStatus !== 'NONE' && (
+                      <span className="px-3 py-1 text-xs bg-amber-100 text-amber-900">
+                        返品: {returnStatusLabel[order.returnStatus] ?? order.returnStatus}
+                      </span>
+                    )}
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>
@@ -230,7 +227,10 @@ export default function AdminOrdersPage() {
                     <div className="text-sm space-y-2 text-gray-700">
                       <p>氏名: {order.shippingName}</p>
                       <p>郵便番号: {order.shippingZip}</p>
-                      <p>住所: {order.shippingAddress}</p>
+                      <p>
+                        住所: {order.shippingCity ? `${order.shippingCity} ` : ''}
+                        {order.shippingAddress}
+                      </p>
                       <p>電話番号: {order.shippingPhone}</p>
                     </div>
                     {order.user && (
@@ -241,23 +241,76 @@ export default function AdminOrdersPage() {
                     )}
                   </div>
                 </div>
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <label className="block text-sm mb-2">ステータスを更新</label>
-                  <select
-                    value={order.status}
-                    onChange={e => handleStatusChange(order.id, e.target.value)}
-                    disabled={updatingId === order.id}
-                    className="px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
-                  >
-                    <option value="PENDING">注文確認中</option>
-                    <option value="PROCESSING">処理中</option>
-                    <option value="PAID">支払い済み</option>
-                    <option value="SHIPPED">発送済み</option>
-                    <option value="DELIVERED">配送完了</option>
-                    <option value="CANCELLED">キャンセル</option>
-                  </select>
+                <div className="mt-6 pt-6 border-t border-gray-200 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm mb-2">注文フロー（発送・決済）</label>
+                      <select
+                        value={order.status}
+                        onChange={e => patchOrder(order.id, { status: e.target.value })}
+                        disabled={updatingId === order.id}
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
+                      >
+                        <option value="PENDING">注文確認中</option>
+                        <option value="PROCESSING">処理中</option>
+                        <option value="PAID">支払い済み</option>
+                        <option value="SHIPPED">発送済み</option>
+                        <option value="DELIVERED">配送完了</option>
+                        <option value="CANCELLED">キャンセル</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-2">開封状況（返品判断の参考）</label>
+                      <select
+                        value={order.packageCondition ?? 'UNCONFIRMED'}
+                        onChange={e =>
+                          patchOrder(order.id, { packageCondition: e.target.value })
+                        }
+                        disabled={updatingId === order.id}
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
+                      >
+                        {Object.entries(packageConditionLabel).map(([k, label]) => (
+                          <option key={k} value={k}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-2">会計（売上計上）</label>
+                      <select
+                        value={order.accountingStatus ?? 'PENDING'}
+                        onChange={e =>
+                          patchOrder(order.id, { accountingStatus: e.target.value })
+                        }
+                        disabled={updatingId === order.id}
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
+                      >
+                        {Object.entries(accountingStatusLabel).map(([k, label]) => (
+                          <option key={k} value={k}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm mb-2">返品・返金（法令に基づく処理）</label>
+                      <select
+                        value={order.returnStatus ?? 'NONE'}
+                        onChange={e => patchOrder(order.id, { returnStatus: e.target.value })}
+                        disabled={updatingId === order.id}
+                        className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-black disabled:opacity-50"
+                      >
+                        {Object.entries(returnStatusLabel).map(([k, label]) => (
+                          <option key={k} value={k}>
+                            {label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                   {updatingId === order.id && (
-                    <span className="ml-3 text-sm text-gray-500">更新中...</span>
+                    <p className="text-sm text-gray-500">更新中...</p>
                   )}
                 </div>
               </div>
