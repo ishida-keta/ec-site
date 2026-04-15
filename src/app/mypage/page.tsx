@@ -37,6 +37,12 @@ export default function MyPage() {
       .finally(() => setOrdersLoading(false))
   }, [status, session?.user?.name])
 
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login?callbackUrl=/mypage')
+    }
+  }, [status, router])
+
   const handleProfileSave = async () => {
     setProfileSaving(true)
     setProfileMessage(null)
@@ -97,8 +103,7 @@ export default function MyPage() {
     return <div className="min-h-screen flex items-center justify-center">読み込み中...</div>
   }
 
-  if (!session) {
-    router.push('/login?callbackUrl=/mypage')
+  if (status === 'unauthenticated' || !session) {
     return null
   }
 

@@ -6,6 +6,13 @@
 
 ## 2026-04-15
 
+### 障害対応（開発環境・DB反映）
+- `P2022: The column orders.packageCondition does not exist` を確認。原因はアプリ側スキーマ更新に対して DB 側カラム未反映だったこと。
+- `.env.local` に `DIRECT_URL` は存在するが、シェル環境変数にロードされていないケースを確認。`echo "$DIRECT_URL"` で空になる事象を切り分け。
+- `set -a; source .env.local; set +a` で環境変数を読み込んでから `DATABASE_URL="$DIRECT_URL" npx prisma db push --accept-data-loss` を実行する運用を整理。
+- Turbopack キャッシュ破損（`.next/dev/cache/...sst` / `ENOENT`）発生時の復旧として、`rm -rf .next` → `npm run dev` の手順を再確認。
+- `mypage` の render 中 `router.push` による warning（Cannot update a component while rendering）を、`useEffect` リダイレクトに変更して解消。
+
 ### 決済反映の補強（Webhook未達対策）
 - 調査で、決済後に `/api/webhooks/stripe` の受信ログが出ず、売上（orders）が未作成のケースを確認。
 - `src/lib/checkoutOrder.ts` に「Checkout Session から注文作成」の共通処理を切り出し、Webhookと`/api/checkout/verify`の両方から利用するよう変更。
@@ -68,4 +75,4 @@
 
 ---
 
-最終更新: 2026-04-15（返品案内・注文の開封/会計/返品ステータス）
+最終更新: 2026-04-15（障害対応ログを追記）
