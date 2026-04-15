@@ -6,6 +6,12 @@
 
 ## 2026-04-15
 
+### 管理画面：顧客と管理者の分離
+- 会員（`role: USER`）のみを **`/admin/customers`** で一覧・検索。注文数表示・詳細へリンク。
+- **`GET /api/admin/customers`** / **`GET /api/admin/customers/[id]`**（ADMIN アカウントは API でも一覧に出さない／詳細は 404）。
+- **`/admin/users`** は **`/admin/customers` へリダイレクト**（旧ブックマーク互換）。ナビ表記は「顧客」。
+- 従業員（ADMIN）専用の管理 UI は未作成（`feature-list` に A-STAFF-01 として未着手を明記）。
+
 ### バックログ登録（Prisma／DB 同期）
 - `docs/design-backlog.md` に **B-OPS-01**（スキーマと DB の同期を手運用に頼らない・デプロイ/CI 方針）を **高優先・未着手** で追加。
 
@@ -111,4 +117,4 @@
 
 ---
 
-最終更新: 2026-04-15（B-OPS-01 バックログ追加）
+最終更新: 2026-04-15（顧客管理 `/admin/customers`）

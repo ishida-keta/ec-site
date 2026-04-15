@@ -54,10 +54,10 @@ export default async function AdminPage() {
       desc: '全注文の参照・検索・ステータス更新',
     },
     {
-      href: '/admin/users',
+      href: '/admin/customers',
       icon: Users,
-      title: 'ユーザー管理',
-      desc: '会員一覧・検索',
+      title: '顧客管理',
+      desc: '会員（お客様）の一覧・注文履歴',
     },
   ] as const
 

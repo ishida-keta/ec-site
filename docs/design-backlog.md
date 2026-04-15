@@ -2,7 +2,7 @@
 
 設計見直しで洗い出した課題。**対応しやすいものから順に消化**する。完了したら本表を更新し、関連する `docs/*.md` や `docs/feature-list.md` も同じコミットで同期すること。
 
-最終更新: 2026-04-15（Prisma／DB 同期の運用課題を追加）
+最終更新: 2026-04-15（B-FEAT-03 顧客詳細のステータス更新）
 
 ---
 
@@ -24,7 +24,7 @@
 | B-OPS-01 | **Prisma スキーマと DB の同期を手運用に頼らない** | `prisma/schema.prisma` は Git で更新されるが、**Supabase 等の DB は自動では変わらない**。`git pull` 後に `db push` / migrate を忘れると **P2022（カラム不存在）** が再発する。個人開発でも抜けやすい。 | **対応必須の方向性（いずれかを決めて実施）:** (1) **本番/Preview** は `prisma migrate deploy` をデプロイパイプラインに組み込む（Vercel Build Command や GitHub Actions）。(2) ローカル用に **post-merge / post-checkout フック**や README のチェックリストで「schema 差分があれば `db push`」を強制。(3) CI で `prisma migrate diff` 等による**ドリフト検知**（任意）。現状の手順は [`CLAUDE.md` の P2022 節](../CLAUDE.md) を参照。 | **高** | 未着手 |
 | B-FEAT-01 | **キーワード検索** | `feature-list` Should・未着手。ワイヤーには検索 UI あり。 | 段階1: `ILIKE` または PostgreSQL 全文検索。段階2: 専用検索エンジンは別途判断。`api-design.md`・画面仕様を追加。 | 中 | 未着手 |
 | B-FEAT-02 | **管理画面：カテゴリ CRUD** | `feature-list` Should・未着手。カテゴリ増加・slug 運用に必須。 | `/admin/categories` 等 + API。`category` 一意制約と URL 方針を `db-design.md` に追記。 | 中 | 未着手 |
-| B-FEAT-03 | **管理画面：ユーザー詳細** | Should・未着手。 | ユーザー単位の注文履歴参照など。`screen-flow.md`・`api-design.md` を更新。 | 低 | 未着手 |
+| B-FEAT-03 | **管理画面：ユーザー詳細** | 顧客は `/admin/customers/[id]` で注文履歴まで対応済み。**従業員**向けは A-STAFF-01 で別途。 | — | 低 | **顧客分は完了**（2026-04-15） |
 | B-FEAT-04 | **パスワードリセット** | Could・未着手。メール送信基盤が必要。 | メールプロバイダ決定後に設計。 | 低 | 未着手 |
 | B-ARCH-01 | **大量商品時のページネーション** | 現状 OFFSET + `take`。超大量時は OFFSET コストが課題になりうる。 | 必要になったらカーソルベースを検討。`design-backlog` か `db-design.md` に判断メモ。 | 低（将来） | 未着手 |
 | B-ARCH-02 | **商品モデルの拡張余地** | 1 商品 1 カテゴリ・画像 1 枚・在庫 1 列。 | 複数カテゴリ/タグ、階層カテゴリ、SKU・バリエーション、画像複数行は**要件が固まった段階**で `db-design.md` に案を書いてからスキーマ化。 | 低（将来） | 未着手 |

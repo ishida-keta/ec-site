@@ -1,6 +1,6 @@
 # API設計書
 
-最終更新: 2026-04-15（プロフィール GET・性別/都道府県）
+最終更新: 2026-04-15（管理者 API: 顧客 `/api/admin/customers`）
 
 ## 概要
 
@@ -69,7 +69,8 @@ Next.js App Router の Route Handlers（`src/app/api/`）で実装。
 | DELETE | /api/admin/products/[id] | 商品削除 ✅ 実装済み | ADMIN |
 | GET | /api/admin/orders | 全注文一覧（`search`: 名前・メール・注文ID 等。`dateFrom` / `dateTo`: `YYYY-MM-DD` 日本時間の日の範囲） ✅ 実装済み | ADMIN |
 | PUT | /api/admin/orders/[id] | 注文更新 ✅（`status` に加え `packageCondition` / `accountingStatus` / `returnStatus` を個別指定可。いずれか1つ以上必須） | ADMIN |
-| GET | /api/admin/users | ユーザー一覧 ✅ 実装済み | ADMIN |
+| GET | /api/admin/customers | **会員（顧客）一覧**（`role: USER` のみ。ADMIN は含まない）✅ `search` 任意 | ADMIN |
+| GET | /api/admin/customers/[id] | **顧客詳細 + 注文一覧**（USER 以外は 404）✅ | ADMIN |
 
 ### PUT /api/admin/orders/[id]（例）
 
