@@ -31,6 +31,22 @@ docs/              # 設計ドキュメント
 - `npx prisma db push` — スキーマをDBに反映
 - `DATABASE_URL="$DIRECT_URL" npx prisma db push --accept-data-loss` — Supabase direct接続で反映（poolerで詰まる場合）
 - `npx prisma generate` — Prismaクライアント生成
+
+### Prisma P2022（カラムが存在しない）が出たら
+
+- **意味**: `prisma/schema.prisma` にはあるが、**接続先 PostgreSQL にまだカラムがない**（アプリと DB の定義がズレている）。
+- **なぜ繰り返しやすいか**:
+  - `git pull` でスキーマファイルは更新されるが、**リモート DB（Supabase）は自動では変わらない**。誰かが `db push` / migrate を実行するまでカラムは増えない。
+  - シェルに `.env.local` が読み込まれておらず `DIRECT_URL` が空 → `db push` が別 DB に向いたり失敗したりする。
+- **対応（毎回これでよい）**:
+  ```bash
+  cd /path/to/ec-site
+  set -a; source .env.local; set +a
+  DATABASE_URL="$DIRECT_URL" npx prisma db push
+  npx prisma generate   # 念のため
+  ```
+  その後 `npm run dev` を再起動。
+- **習慣**: `git pull` したあと `prisma/schema.prisma` に差分があれば、**その日のうちに**上記を実行する。
 - `stripe listen --forward-to localhost:3000/api/webhooks/stripe` — ローカルWebhook検証（表示された `whsec_...` を `STRIPE_WEBHOOK_SECRET` に設定）。**dev サーバーのポート**（例: `3001`）に合わせて URL を変えること。
 
 ## 環境変数（.env.local）

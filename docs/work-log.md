@@ -6,6 +6,11 @@
 
 ## 2026-04-15
 
+### P2022（`orders.shippingPrefecture` など）再発時の対応
+- 原因はいつも同じ: **コード側スキーマ更新に対し、Supabase 側へ `prisma db push` が未実行**。
+- 環境変数をシェルに載せたうえで `DATABASE_URL="$DIRECT_URL" npx prisma db push` を実行し同期済み。
+- 繰り返しやすい理由は `CLAUDE.md` に「pull 後の db push」「P2022 の意味」を追記。
+
 ### プロフィール・注文の性別・都道府県
 - `users` に `gender`（enum）・`prefecture`（任意）、`orders` に `shippingPrefecture`（配送先）を追加。
 - チェックアウトで都道府県を 47 都道府県から選択。市区町村は別入力。
