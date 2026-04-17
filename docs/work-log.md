@@ -6,6 +6,10 @@
 
 ## 2026-04-18
 
+### Vercel 本番が 404（`FUNCTION_RUNTIME_DEPRECATED`）
+- 応答ヘッダ `x-vercel-error: FUNCTION_RUNTIME_DEPRECATED` — デプロイに紐づくサーバーレスランタイムがプラットフォームで非推奨扱いになっていた。
+- `package.json` に **`engines.node`: `20.x`** を追加し、再デプロイで最新サポートランタイムを使うよう明示。
+
 ### B-DOC-01（公開商品 API と実装の整合）
 - 方針 **A** を採用: ストアの商品一覧・詳細は **Server Component + Prisma**（`ProductGrid`、`products/[id]/page.tsx`）であり、公開用 `GET /api/products` は**存在しない**。
 - `docs/api-design.md` に上記を「概要」直下で明記し、エンドポイント一覧から未実装の GET 行を削除。`design-backlog.md` の B-DOC-01 を完了に更新。
