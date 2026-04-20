@@ -100,7 +100,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const siteUrl = resolveSiteUrl(req)
-    console.log('[checkout/session] siteUrl:', siteUrl)
+    const rawEnv = process.env.NEXTAUTH_URL ?? ''
+    console.log('[checkout/session] siteUrl:', JSON.stringify(siteUrl), 'len:', siteUrl.length)
+    console.log('[checkout/session] NEXTAUTH_URL raw hex:', Buffer.from(rawEnv).toString('hex').slice(-20))
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
@@ -132,7 +134,8 @@ export async function POST(req: NextRequest) {
     console.error('Stripe session error:', err?.message, 'param:', err?.param)
     const message = err instanceof Error ? err.message : 'Stripe error'
     const param = err?.param ?? 'unknown'
-    const keyHint = (process.env.STRIPE_SECRET_KEY ?? '').slice(0, 14) + '...'
-    return NextResponse.json({ error: `${message} | param=${param} | key=${keyHint}` }, { status: 500 })
+    const rawEnv = process.env.NEXTAUTH_URL ?? ''
+    const urlHex = Buffer.from(rawEnv).toString('hex').slice(-20)
+    return NextResponse.json({ error: `${message} | param=${param} | urlHex=${urlHex}` }, { status: 500 })
   }
 }

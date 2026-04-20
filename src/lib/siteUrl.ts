@@ -7,7 +7,7 @@ import type { NextRequest } from 'next/server'
  */
 export function resolveSiteUrl(req: NextRequest): string {
   const origin = req.headers.get('origin')?.replace(/\/$/, '') ?? null
-  const envUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, '') ?? ''
+  const envUrl = process.env.NEXTAUTH_URL?.trim().replace(/\/$/, '') ?? ''
 
   if (process.env.NODE_ENV === 'development') {
     if (origin) return origin
