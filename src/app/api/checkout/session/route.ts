@@ -75,20 +75,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '配送先の都道府県を選択してください' }, { status: 400 })
   }
 
-  const lineItems = items.map((item) => ({
-    price_data: {
-      currency: 'jpy',
-      product_data: {
-        name: item.name,
-        ...(item.imageUrl ? { images: [item.imageUrl] } : {}),
+  const lineItems = items.map((item) => {
+    const isValidImageUrl = (() => {
+      if (!item.imageUrl) return false
+      try {
+        const u = new URL(item.imageUrl)
+        return u.protocol === 'https:'
+      } catch {
+        return false
+      }
+    })()
+    return {
+      price_data: {
+        currency: 'jpy',
+        product_data: {
+          name: item.name,
+          ...(isValidImageUrl ? { images: [item.imageUrl!] } : {}),
+        },
+        unit_amount: item.price,
       },
-      unit_amount: item.price,
-    },
-    quantity: item.quantity,
-  }))
+      quantity: item.quantity,
+    }
+  })
 
   try {
     const siteUrl = resolveSiteUrl(req)
+    console.log('[checkout/session] siteUrl:', siteUrl)
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
@@ -117,7 +129,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: checkoutSession.url })
   } catch (err) {
-    console.error('Stripe session error:', err)
+    console.error('Stripe session error:', err instanceof Error ? err.message : err)
+    console.error('Stripe error detail:', JSON.stringify(err, Object.getOwnPropertyNames(err)))
     const message = err instanceof Error ? err.message : 'Stripe error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
