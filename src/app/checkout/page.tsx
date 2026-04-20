@@ -85,18 +85,24 @@ export default function CheckoutPage() {
 
         if (!res.ok) {
           const text = await res.text();
-          const data = text ? JSON.parse(text) : {};
+          let data: { error?: string } = {};
+          try { data = text ? JSON.parse(text) : {} } catch {}
           if (res.status === 401) {
             router.push('/login?callbackUrl=/checkout');
             throw new Error('ログインが必要です。ログイン画面へ移動します。');
           }
-          throw new Error(data.error ?? '決済セッションの作成に失敗しました');
+          throw new Error(`[${res.status}] ${data.error ?? '決済セッションの作成に失敗しました'}`);
         }
 
-        const { url } = await res.json();
+        const data = await res.json();
+        const url: string | null = data.url ?? null;
+        if (!url) {
+          throw new Error('決済URLが取得できませんでした（url: ' + JSON.stringify(url) + '）');
+        }
         clearCart();
-        window.location.href = url;
+        window.location.assign(url);
       } catch (err) {
+        console.error('[checkout] error:', err);
         setError(err instanceof Error ? err.message : '予期しないエラーが発生しました');
         setIsLoading(false);
       }
